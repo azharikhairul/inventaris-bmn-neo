@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class AdminMiddleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  Closure(Request): (Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        if (! auth()->check() || ! auth()->user()->isAdmin()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Akses ditolak. Halaman ini hanya dapat diakses oleh Administrator.',
+                ], 403);
+            }
+
+            return redirect()->route('profile.index')
+                ->with('error', 'Akses ditolak. Halaman Manajemen Pengguna hanya dapat diakses oleh Administrator.');
+        }
+
+        return $next($request);
+    }
+}
